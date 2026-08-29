@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virun — Experience Every City Like a Local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141B33;
+    --ink-2:#1D2745;
+    --paper:#F6F1E2;
+    --paper-dim:#E8E0CB;
+    --marigold:#E8A33D;
+    --marigold-dim:#8A6A2E;
+    --teal:#4FBDAE;
+    --teal-dim:#2F6F6B;
+    --stamp:#E2665A;
+    --stamp-dim:#8A362E;
+    --ink-text:#2A2A28;
+    --max:1180px;
+    --disp:'Fraunces', serif;
+    --body:'Inter', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+  h1,h2,h3{font-family:var(--disp); margin:0; letter-spacing:-0.01em;}
+  .eyebrow{
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--marigold); display:flex; align-items:center; gap:0.6em; margin-bottom:1.1em;
+  }
+  .eyebrow::before{content:''; width:22px; height:1px; background:var(--marigold); display:inline-block;}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 32px;}
+  img{max-width:100%; display:block;}
+
+  /* ===== Route rail (signature nav / progress) ===== */
+  .route-rail{
+    position:fixed; left:0; top:0; height:100vh; width:96px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:50; border-right:1px solid rgba(246,241,226,0.12);
+    background:linear-gradient(180deg, rgba(20,27,51,0.9), rgba(20,27,51,0.75));
+    backdrop-filter:blur(6px);
+  }
+  .rail-inner{position:relative; height:78%; display:flex; flex-direction:column; justify-content:space-between; align-items:center;}
+  .rail-line{position:absolute; left:50%; top:0; bottom:0; width:0; border-left:2px dashed rgba(246,241,226,0.28); transform:translateX(-50%);}
+  .rail-plane{
+    position:absolute; left:50%; top:0%; transform:translate(-50%,-50%) rotate(90deg);
+    font-size:1.05rem; color:var(--marigold); transition:top 0.5s cubic-bezier(.4,0,.2,1); z-index:3;
+  }
+  .rail-stop{position:relative; z-index:2; display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:50%; background:var(--ink);
+    border:1.5px solid rgba(246,241,226,0.35); cursor:pointer;
+  }
+  .rail-stop .code{font-family:var(--mono); font-size:0.58rem; letter-spacing:0.05em; color:var(--paper-dim);}
+  .rail-stop.active{border-color:var(--marigold); box-shadow:0 0 0 4px rgba(232,163,61,0.15);}
+  .rail-stop.active .code{color:var(--marigold);}
+  .rail-stop .stamp-mark{
+    position:absolute; inset:-14px; border-radius:50%; border:1.5px dashed var(--marigold);
+    opacity:0; transform:scale(1.6) rotate(-18deg); transition:all 0.45s cubic-bezier(.34,1.56,.64,1);
+    pointer-events:none;
+  }
+  .rail-stop.active .stamp-mark{opacity:0.9; transform:scale(1) rotate(-8deg);}
+  .rail-label{
+    position:absolute; left:44px; top:50%; transform:translateY(-50%);
+    font-family:var(--mono); font-size:0.62rem; white-space:nowrap; color:var(--paper-dim);
+    opacity:0; transition:opacity 0.2s;
+  }
+  .rail-stop:hover .rail-label, .rail-stop.active .rail-label{opacity:1; color:var(--paper);}
+
+  main{margin-left:96px;}
+
+  section.section{padding:120px 0; border-bottom:1px solid rgba(246,241,226,0.08); position:relative;}
+  .reveal{opacity:0; transform:translateY(22px); transition:opacity 0.7s ease, transform 0.7s ease;}
+  .reveal.in-view{opacity:1; transform:none;}
+  @media (max-width:560px){
+    /* Belt-and-braces: on small screens, guarantee content is never left invisible */
+    .reveal{opacity:1; transform:none; transition:opacity 0.4s ease;}
+  }
+
+  /* ===== Hero ===== */
+  .hero{min-height:92vh; display:flex; align-items:center; padding-top:80px;}
+  .hero-grid{display:grid; grid-template-columns:1.3fr 0.9fr; gap:64px; align-items:center; width:100%;}
+  .hero h1{font-size:clamp(2.6rem, 4.4vw, 4.1rem); font-weight:700; line-height:1.06; color:var(--paper);}
+  .hero h1 em{font-style:italic; color:var(--marigold); font-weight:500;}
+  .hero p.lede{font-size:1.15rem; color:var(--paper-dim); max-width:46ch; margin-top:26px;}
+  .cta-row{display:flex; gap:16px; margin-top:38px; flex-wrap:wrap;}
+  .btn{
+    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.04em; text-transform:uppercase;
+    padding:14px 22px; border-radius:3px; text-decoration:none; display:inline-flex; align-items:center; gap:10px;
+    transition:transform 0.2s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--marigold); color:var(--ink);}
+  .btn-ghost{border:1px solid rgba(246,241,226,0.4); color:var(--paper);}
+
+  .stamp-badge{
+    justify-self:end; width:190px; height:190px; border-radius:50%;
+    border:2px dashed var(--teal); display:flex; align-items:center; justify-content:center;
+    transform:rotate(-9deg); color:var(--teal); text-align:center; font-family:var(--mono);
+    font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; line-height:1.5; padding:18px;
+    position:relative; flex-shrink:0;
+  }
+  .stamp-badge::after{content:''; position:absolute; inset:14px; border:1px solid var(--teal); border-radius:50%; opacity:0.5;}
+
+  .tagline-strip{margin-top:70px; display:flex; gap:48px; flex-wrap:wrap; font-family:var(--mono); font-size:0.74rem; color:var(--paper-dim); text-transform:uppercase; letter-spacing:0.05em;}
+  .tagline-strip b{color:var(--paper); font-weight:600;}
+
+  /* ===== shared section heads ===== */
+  .head-row{display:flex; justify-content:space-between; align-items:flex-end; gap:40px; margin-bottom:56px; flex-wrap:wrap;}
+  .head-row h2{font-size:clamp(1.9rem,3vw,2.6rem); max-width:14ch;}
+  .head-row .head-note{max-width:38ch; color:var(--paper-dim); font-size:0.98rem;}
+
+  /* ===== Problem ===== */
+  .problem-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+  .problem-card{background:var(--ink-2); border:1px solid rgba(246,241,226,0.1); border-radius:6px; padding:30px 26px;}
+  .problem-card .num{font-family:var(--mono); color:var(--stamp); font-size:0.78rem; letter-spacing:0.06em;}
+  .problem-card h3{font-size:1.28rem; margin:14px 0 12px; font-weight:600; color:var(--paper);}
+  .problem-card p{color:var(--paper-dim); font-size:0.95rem; margin:0;}
+  .stat-callout{
+    margin-top:44px; display:grid; grid-template-columns:auto 1fr; gap:30px; align-items:center;
+    background:linear-gradient(120deg, rgba(232,163,61,0.1), transparent); border-left:3px solid var(--marigold);
+    padding:26px 30px; border-radius:4px;
+  }
+  .stat-callout .big{font-family:var(--mono); font-size:3rem; color:var(--marigold); font-weight:600; line-height:1;}
+  .stat-callout .cap{color:var(--paper-dim); font-size:0.92rem; max-width:58ch;}
+  .stat-callout .src{display:block; margin-top:8px; font-size:0.72rem; opacity:0.6;}
+  .stat-breakdown{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+
+  /* ===== Validation (survey) ===== */
+  .val-meta{display:flex; gap:40px; flex-wrap:wrap; margin-bottom:44px; font-family:var(--mono); font-size:0.8rem; color:var(--paper-dim);}
+  .val-meta b{display:block; font-size:1.6rem; color:var(--marigold); font-family:var(--mono);}
+  .val-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .val-card{background:var(--ink-2); border:1px solid rgba(246,241,226,0.1); border-radius:6px; padding:24px 22px;}
+  .val-card .pct{font-family:var(--mono); font-size:2.1rem; color:var(--teal); font-weight:600; line-height:1;}
+  .val-card .pct span{font-size:1rem; color:var(--paper-dim); font-weight:400;}
+  .val-card p{margin:12px 0 0; font-size:0.86rem; color:var(--paper-dim);}
+  .val-card .qtag{font-family:var(--mono); font-size:0.64rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--stamp); margin-bottom:6px; display:block;}
+  .val-lower{display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; margin-top:40px; align-items:start;}
+  .pain-list{list-style:none; margin:0; padding:0; counter-reset:pain;}
+  .pain-list li{counter-increment:pain; display:flex; gap:14px; padding:12px 0; border-bottom:1px solid rgba(246,241,226,0.08); font-size:0.9rem; color:var(--paper-dim); align-items:baseline;}
+  .pain-list li::before{content:counter(pain); font-family:var(--mono); color:var(--marigold); font-size:0.78rem; width:20px; flex-shrink:0;}
+  .pain-list li b{color:var(--paper); font-weight:600;}
+  .quote-box{border-left:3px solid var(--teal); background:rgba(79,189,174,0.08); padding:22px 24px; border-radius:4px; font-family:var(--disp); font-size:1.05rem; font-style:italic; color:var(--paper);}
+  .quote-box cite{display:block; margin-top:10px; font-family:var(--mono); font-size:0.7rem; font-style:normal; color:var(--paper-dim); text-transform:uppercase; letter-spacing:0.05em;}
+
+  /* ===== Market ===== */
+  .market-layout{display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:start;}
+  .funnel{display:flex; flex-direction:column; gap:18px;}
+  .funnel-row{position:relative;}
+  .funnel-row .meta{display:flex; justify-content:space-between; font-family:var(--mono); font-size:0.78rem; margin-bottom:8px; color:var(--paper-dim); gap:10px;}
+  .funnel-row .meta b{color:var(--paper); font-size:0.95rem;}
+  .funnel-track{height:34px; background:rgba(246,241,226,0.08); border-radius:3px; overflow:hidden;}
+  .funnel-fill{height:100%; width:0%; border-radius:3px; transition:width 1.4s cubic-bezier(.16,1,.3,1);}
+  .funnel-row.tam .funnel-fill{background:var(--teal-dim); width:0;}
+  .funnel-row.sam .funnel-fill{background:var(--teal); width:0;}
+  .funnel-row.som .funnel-fill{background:var(--marigold); width:0;}
+  .funnel.in-view .funnel-row.tam .funnel-fill{width:100%;}
+  .funnel.in-view .funnel-row.sam .funnel-fill{width:38%;}
+  .funnel.in-view .funnel-row.som .funnel-fill{width:6%;}
+  .funnel-row p.desc{color:var(--paper-dim); font-size:0.86rem; margin:8px 0 0;}
+  .market-notes{display:flex; flex-direction:column; gap:22px;}
+  .note-card{border:1px solid rgba(246,241,226,0.12); border-radius:6px; padding:22px 22px;}
+  .note-card h4{margin:0 0 8px; font-family:var(--mono); font-size:0.78rem; letter-spacing:0.05em; color:var(--teal); text-transform:uppercase;}
+  .note-card p{margin:0; font-size:0.9rem; color:var(--paper-dim);}
+  .fine{font-size:0.74rem; color:rgba(246,241,226,0.45); margin-top:36px; line-height:1.7;}
+
+  /* ===== Competitor quadrant ===== */
+  .cmp-layout{display:grid; grid-template-columns:0.95fr 1.05fr; gap:60px; align-items:start;}
+  .quadrant{position:relative; aspect-ratio:1/1; background:var(--ink-2); border:1px solid rgba(246,241,226,0.14); border-radius:8px;}
+  .quadrant::before, .quadrant::after{content:''; position:absolute; background:rgba(246,241,226,0.14);}
+  .quadrant::before{left:50%; top:0; bottom:0; width:1px;}
+  .quadrant::after{top:50%; left:0; right:0; height:1px;}
+  .qaxis{position:absolute; font-family:var(--mono); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--paper-dim);}
+  .qaxis.top{top:10px; left:50%; transform:translateX(-50%);}
+  .qaxis.bottom{bottom:10px; left:50%; transform:translateX(-50%);}
+  .qaxis.left{left:10px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top;}
+  .qaxis.right{right:10px; top:50%; transform:translateY(-50%) rotate(90deg); transform-origin:right top;}
+  .qdot{position:absolute; width:11px; height:11px; border-radius:50%; background:var(--paper-dim); transform:translate(-50%,-50%); cursor:pointer; font-size:0; line-height:0; color:transparent;}
+  .qdot::before{content:''; position:absolute; inset:-12px; border-radius:50%;} /* larger invisible tap target */
+  .qdot .qtip{
+    position:absolute; bottom:130%; left:50%; transform:translateX(-50%); background:var(--paper); color:var(--ink-text);
+    font-size:0.72rem; padding:6px 10px; border-radius:4px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s;
+    font-family:var(--body); font-weight:600; line-height:1.4; max-width:min(70vw, 260px); white-space:normal; text-align:center;
+  }
+  .qdot:hover .qtip, .qdot:active .qtip, .qdot.tapped .qtip{opacity:1;}
+  .qdot.virun{width:18px; height:18px; background:var(--marigold); box-shadow:0 0 0 6px rgba(232,163,61,0.18);}
+  .qdot.virun .qtip{background:var(--marigold); font-weight:700;}
+
+  .cmp-table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .cmp-table{width:100%; border-collapse:collapse; font-size:0.86rem;}
+  .cmp-table th, .cmp-table td{padding:12px 10px; text-align:left; border-bottom:1px solid rgba(246,241,226,0.1);}
+  .cmp-table th{font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--paper-dim); font-weight:500;}
+  .cmp-table td.name{font-weight:600;}
+  .cmp-table tr.highlight td{background:rgba(232,163,61,0.08);}
+  .cmp-table tr.highlight td.name{color:var(--marigold);}
+  .yes{color:var(--teal); font-weight:700;}
+  .no{color:rgba(246,241,226,0.35);}
+  .part{color:var(--paper-dim);}
+
+  /* ===== How it works ===== */
+  .steps-row{display:grid; grid-template-columns:repeat(3,1fr); gap:28px; position:relative;}
+  .steps-row.second{margin-top:20px;}
+  .step-card{background:var(--ink-2); border-radius:6px; padding:28px 24px; border:1px solid rgba(246,241,226,0.1);}
+  .step-card .stepno{font-family:var(--mono); color:var(--teal); font-size:0.75rem;}
+  .step-card h3{font-size:1.1rem; margin:12px 0 8px; font-weight:600;}
+  .step-card p{color:var(--paper-dim); font-size:0.9rem; margin:0;}
+  .phase-label{font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--marigold); margin:44px 0 16px;}
+
+  /* ===== Under the hood ===== */
+  .tec-grid{grid-template-columns:1fr 1fr;}
+
+  /* ===== Business model ===== */
+  .biz-cards{display:grid; grid-template-columns:repeat(3,1fr); gap:26px;}
+  .biz-card{border:1px solid rgba(246,241,226,0.12); border-radius:6px; padding:26px 22px;}
+  .biz-card .tag{font-family:var(--mono); font-size:0.68rem; color:var(--teal); text-transform:uppercase; letter-spacing:0.05em;}
+  .biz-card h3{font-size:1.1rem; margin:10px 0; font-weight:600;}
+  .biz-card p{color:var(--paper-dim); font-size:0.88rem; margin:0;}
+
+  .roadmap{margin-top:70px;}
+  .roadmap-track{display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative;}
+  .roadmap-track::before{content:''; position:absolute; top:11px; left:6%; right:6%; height:1px; border-top:1.5px dashed rgba(246,241,226,0.3);}
+  .leg{position:relative; padding:36px 18px 0;}
+  .leg .dot{position:absolute; top:0; left:18px; width:23px; height:23px; border-radius:50%; background:var(--ink); border:2px solid var(--marigold); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:0.62rem; color:var(--marigold);}
+  .leg h4{font-size:1.02rem; margin:0 0 6px; font-weight:600;}
+  .leg .when{font-family:var(--mono); font-size:0.7rem; color:var(--paper-dim); margin-bottom:10px; display:block;}
+  .leg p{font-size:0.88rem; color:var(--paper-dim); margin:0;}
+
+  .moat-box{margin-top:56px; display:grid; grid-template-columns:1fr 1fr; gap:30px;}
+  .moat-box .col h4{font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; color:var(--stamp); letter-spacing:0.05em; margin-bottom:12px;}
+  .moat-box .col p{color:var(--paper-dim); font-size:0.9rem;}
+  .moat-box ul{margin:0; padding-left:18px; color:var(--paper-dim); font-size:0.88rem;}
+  .moat-box li{margin-bottom:8px;}
+
+  /* ===== Trust ===== */
+  .trust-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .trust-card{padding:24px; border-radius:6px; background:var(--ink-2); border:1px solid rgba(246,241,226,0.1);}
+  .trust-card .ic{font-size:1.4rem;}
+  .trust-card h4{font-size:1rem; margin:12px 0 6px; font-weight:600;}
+  .trust-card p{font-size:0.86rem; color:var(--paper-dim); margin:0;}
+
+  /* ===== Ask / footer ===== */
+  .ask{text-align:left;}
+  .ask h2{font-size:clamp(2rem,4vw,3.1rem); max-width:16ch;}
+  .ask p.lede{color:var(--paper-dim); max-width:52ch; margin-top:20px; font-size:1.05rem;}
+  .contact-row{display:flex; gap:56px; margin-top:48px; flex-wrap:wrap;}
+  .contact-row .c-item .label{font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; color:var(--paper-dim); letter-spacing:0.06em;}
+  .contact-row .c-item .val{font-size:1.05rem; margin-top:6px; font-weight:600; color:var(--marigold); word-break:break-word;}
+  footer{padding:40px 0 60px; font-size:0.72rem; color:rgba(246,241,226,0.4); font-family:var(--mono);}
+
+  /* ===== Tablet / small desktop ===== */
+  @media (max-width:980px){
+    .route-rail{width:100%; height:56px; top:0; flex-direction:row; border-right:none; border-bottom:1px solid rgba(246,241,226,0.12);}
+    .rail-inner{flex-direction:row; height:auto; width:92%;}
+    .rail-line{left:0; right:0; top:50%; bottom:auto; width:auto; height:0; border-left:none; border-top:2px dashed rgba(246,241,226,0.28); transform:translateY(-50%);}
+    .rail-plane{top:50%; left:0%; transform:translate(-50%,-50%) rotate(0deg);}
+    .rail-label{display:none;}
+    main{margin-left:0; margin-top:56px;}
+    .hero{min-height:auto; padding-top:40px;}
+    .hero-grid, .market-layout, .cmp-layout, .moat-box, .tec-grid{grid-template-columns:1fr;}
+    .problem-grid, .steps-row, .biz-cards, .trust-grid, .roadmap-track, .val-grid, .val-lower, .stat-breakdown{grid-template-columns:1fr;}
+    .val-meta{gap:26px;}
+    .stamp-badge{justify-self:start; margin-top:30px; width:150px; height:150px;}
+    section.section{padding:70px 0;}
+    .wrap{padding:0 22px;}
+    .roadmap-track::before{display:none;}
+    .leg{padding-left:40px;}
+    .stat-callout{grid-template-columns:1fr; text-align:left;}
+  }
+
+  /* ===== Phones ===== */
+  @media (max-width:560px){
+    .wrap{padding:0 18px;}
+    section.section{padding:52px 0;}
+    .hero p.lede{font-size:1.02rem; max-width:none;}
+    .tagline-strip{gap:26px; margin-top:44px;}
+    .cta-row{gap:12px;}
+    .btn{padding:12px 18px; font-size:0.72rem;}
+    .head-row{margin-bottom:36px; gap:16px;}
+    .head-row .head-note{max-width:none; font-size:0.9rem;}
+    .stat-callout{padding:20px 20px;}
+    .stat-callout .big{font-size:2.2rem;}
+    .val-meta{gap:20px;}
+    .val-meta b{font-size:1.3rem;}
+    .quadrant{max-width:340px; margin:0 auto;}
+    .qaxis{font-size:0.52rem; letter-spacing:0.02em;}
+    .qaxis.top{top:6px;}
+    .qaxis.bottom{bottom:6px;}
+    .qaxis.left{left:6px;}
+    .qaxis.right{right:6px;}
+    .cmp-table{min-width:0;}
+    .cmp-table thead{display:none;}
+    .cmp-table, .cmp-table tbody, .cmp-table tr, .cmp-table td{display:block; width:100%;}
+    .cmp-table tr{margin-bottom:14px; background:var(--ink-2); border:1px solid rgba(246,241,226,0.12); border-radius:8px; padding:6px 14px; overflow:hidden;}
+    .cmp-table tr.highlight{border-color:var(--marigold); background:rgba(232,163,61,0.1);}
+    .cmp-table td{border-bottom:1px solid rgba(246,241,226,0.08); padding:10px 0; display:flex; justify-content:space-between; align-items:center; gap:16px; text-align:right;}
+    .cmp-table td:last-child{border-bottom:none;}
+    .cmp-table td.name{font-size:1rem; padding-top:14px; padding-bottom:10px; justify-content:flex-start; text-align:left;}
+    .cmp-table td.name::before{content:none;}
+    .cmp-table td::before{content:attr(data-label); font-family:var(--mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--paper-dim); text-align:left;}
+    .roadmap{margin-top:40px;}
+    .contact-row{gap:28px;}
+    .funnel-row .meta{flex-direction:column; align-items:flex-start; gap:2px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="route-rail" aria-label="Pitch navigation">
+  <div class="rail-inner">
+    <div class="rail-line"></div>
+    <div class="rail-plane" id="railPlane">✈</div>
+    <div class="rail-stop" data-target="dep"><span class="code">DEP</span><span class="stamp-mark"></span><span class="rail-label">Takeoff</span></div>
+    <div class="rail-stop" data-target="prb"><span class="code">PRB</span><span class="stamp-mark"></span><span class="rail-label">The Problem</span></div>
+    <div class="rail-stop" data-target="val"><span class="code">VAL</span><span class="stamp-mark"></span><span class="rail-label">Validation</span></div>
+    <div class="rail-stop" data-target="mkt"><span class="code">MKT</span><span class="stamp-mark"></span><span class="rail-label">Market Size</span></div>
+    <div class="rail-stop" data-target="cmp"><span class="code">CMP</span><span class="stamp-mark"></span><span class="rail-label">Competition</span></div>
+    <div class="rail-stop" data-target="htw"><span class="code">HTW</span><span class="stamp-mark"></span><span class="rail-label">How It Works</span></div>
+    <div class="rail-stop" data-target="tec"><span class="code">TEC</span><span class="stamp-mark"></span><span class="rail-label">Under the Hood</span></div>
+    <div class="rail-stop" data-target="biz"><span class="code">BIZ</span><span class="stamp-mark"></span><span class="rail-label">Strategy</span></div>
+    <div class="rail-stop" data-target="trs"><span class="code">TRS</span><span class="stamp-mark"></span><span class="rail-label">Trust & Safety</span></div>
+    <div class="rail-stop" data-target="arr"><span class="code">ARR</span><span class="stamp-mark"></span><span class="rail-label">Landing</span></div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- DEPARTURE / HERO -->
+  <section id="dep" class="section hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Boarding Pass</div>
+        <h1>Every city has two versions.<br>Tourists see one. <em>Locals live in the other.</em></h1>
+        <p class="lede">Virun pairs an AI-built itinerary with a real, verified local — so you land in the version locals actually live in, not the one built for tour buses.</p>
+        <div class="cta-row">
+          <a href="#prb" class="btn btn-primary">See the problem →</a>
+          <a href="#biz" class="btn btn-ghost">Read the strategy</a>
+        </div>
+        <div class="tagline-strip">
+          <div><b>AI planning</b><br>in your language</div>
+          <div><b>Verified local expert</b><br>government KYC + trust score</div>
+          <div><b>Real-time in-trip</b><br>scam alerts · SOS · translation</div>
+        </div>
+      </div>
+      <div class="stamp-badge">Where AI Meets Local Expertise — Est. 2026</div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="prb" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>Planning still runs on three broken systems</h2>
+        <p class="head-note">None of the tools travelers actually use today were built to do the whole job — plan it, trust it, and get through it safely. We confirmed this with 77 travelers before building anything — see next.</p>
+      </div>
+      <div class="problem-grid">
+        <div class="problem-card reveal">
+          <div class="num">01 — GENERIC AI &amp; MAPS</div>
+          <h3>Route-based, not you-based</h3>
+          <p>ChatGPT and Google Maps can list ten cafés near you. Neither knows which one the owner will wave you into for a free coffee, or which street to avoid after dark.</p>
+        </div>
+        <div class="problem-card reveal">
+          <div class="num">02 — SOCIAL &amp; BLOGS</div>
+          <h3>Sponsored, generic, and stale</h3>
+          <p>A creator's one good day in a city two years ago isn't a plan for your Tuesday afternoon — and you can't tell sponsored content from a genuine recommendation.</p>
+        </div>
+        <div class="problem-card reveal">
+          <div class="num">03 — BOOKING MARKETPLACES</div>
+          <h3>Trust flows one way, then stops</h3>
+          <p>You review the guide after the fact. Nobody verifies who you are, and once the tour ends, there's no safety net left if the rest of your trip goes wrong.</p>
+        </div>
+      </div>
+      <div class="stat-callout reveal">
+        <div class="big">33%</div>
+        <div class="cap">of tours, activities and attractions get booked online today — versus 64% of travel overall. The other two-thirds still runs on trust nobody has built a digital layer for yet. That gap is the opportunity.
+          <span class="src">Source: Phocuswright &amp; Arival, "Travel Experiences 2026" market sizing report</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION -->
+  <section id="val" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>We didn't guess. We asked 77 travelers first</h2>
+        <p class="head-note">A primary survey run before building anything — 74 core quantitative responses plus a supplementary language &amp; guide-recruitment sample, ~77 respondents in total.</p>
+      </div>
+      <div class="val-meta reveal">
+        <div><b>77</b>travelers surveyed</div>
+        <div><b>74</b>quantitative core responses (n)</div>
+        <div><b>3</b>South-India languages spoken by most respondents</div>
+      </div>
+      <div class="val-grid reveal">
+        <div class="val-card">
+          <span class="qtag">Culture over checklists</span>
+          <div class="pct">87.8<span>%</span></div>
+          <p>want cultural immersion, not just sightseeing — validates positioning around authentic local experience, not generic tours.</p>
+        </div>
+        <div class="val-card">
+          <span class="qtag">The core wedge</span>
+          <div class="pct">52.7<span>%</span></div>
+          <p>say AI vs. human guidance "depends on the trip" — the largest single answer. Confirms a hybrid, not a pure-AI or pure-agency product.</p>
+        </div>
+        <div class="val-card">
+          <span class="qtag">Users stay in control</span>
+          <div class="pct">54.1<span>%</span></div>
+          <p>prefer to self-plan with no external help; only 8.1% want a full travel agency — the app must assist, not take over.</p>
+        </div>
+        <div class="val-card">
+          <span class="qtag">Where guides get hired</span>
+          <div class="pct">52.7<span>%</span></div>
+          <p>would hire a guide for adventure touring, 41.9% for heritage sites — vs. just 5.4% for generic city tours.</p>
+        </div>
+        <div class="val-card">
+          <span class="qtag">Conditional willingness to pay</span>
+          <div class="pct">60.8<span>%</span></div>
+          <p>would pay for a language-matched local guide "if unfamiliar with the city" — value-based, not habitual, spend.</p>
+        </div>
+        <div class="val-card">
+          <span class="qtag">Supply is the hard side</span>
+          <div class="pct">24.3<span>%</span></div>
+          <p>are willing to become paid guides themselves — recruiting local supply will be harder than acquiring traveler demand.</p>
+        </div>
+      </div>
+      <div class="val-lower">
+        <div class="reveal">
+          <h3 style="font-size:1.1rem; font-family:var(--body); font-weight:600; margin-bottom:16px;">Top friction points, ranked by mentions</h3>
+          <ul class="pain-list">
+            <li><b>Transit &amp; transport logistics</b> — delays, congestion, wrong bus/stop names</li>
+            <li><b>Trustworthy budget stays</b> — affordable hotels near attractions, inflated last-minute rates</li>
+            <li><b>Food discovery</b> — taste mismatch, food poisoning, thin restaurant info on Maps</li>
+            <li><b>Local knowledge gaps</b> — not knowing what's worth visiting, overspending as a result</li>
+            <li><b>Time management</b> — over-packed or too-rushed itineraries</li>
+            <li><b>Safety &amp; language barriers</b> — theft risk, miscommunication in unfamiliar regions</li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <div class="quote-box">"Just went by Google Maps and ratings."
+            <cite>— repeated verbatim by multiple respondents describing how they plan today</cite>
+          </div>
+          <p style="color:var(--paper-dim); font-size:0.88rem; margin-top:18px;">Respondents' mother tongue skews Telugu (largest cluster), then Tamil, Hindi, and Assamese — with Telugu + English the dominant working combination. Go-to home-turf cities were Vizag, Hyderabad, and Goa; dream destinations skewed Switzerland, Paris, Japan, and Kashmir/Ladakh.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKET -->
+  <section id="mkt" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>A large, fast-growing, under-digitized market</h2>
+        <p class="head-note">Sized top-down from global experience travel, narrowed to where Virun actually plays first.</p>
+      </div>
+      <div class="market-layout">
+        <div class="funnel reveal">
+          <div class="funnel-row tam">
+            <div class="meta"><b>TAM — the whole ocean</b><span>$271B → $342B by 2029</span></div>
+            <div class="funnel-track"><div class="funnel-fill"></div></div>
+            <p class="desc">Worldwide spend on tours, activities &amp; guided experiences. Growing ~6% a year globally, ~8% a year in Asia-Pacific. We'll never touch most of this — it's just proof the category is real and growing.</p>
+          </div>
+          <div class="funnel-row sam">
+            <div class="meta"><b>SAM — the market we can actually reach</b><span>~$9B</span></div>
+            <div class="funnel-track"><div class="funnel-fill"></div></div>
+            <p class="desc">India-origin travelers who'd pay for a guided or locally-hosted experience — domestic ($23.8B travel market) plus outbound leisure (~$23–35B, growing 11–12%/yr), narrowed down to the "experience" slice of that spend.</p>
+          </div>
+          <div class="funnel-row som">
+            <div class="meta"><b>SOM — what we're actually building toward</b><span>Year 3 target</span></div>
+            <div class="funnel-track"><div class="funnel-fill"></div></div>
+            <p class="desc">25 cities · 5,000 verified guides · 150,000 bookings/year. This is a bottom-up plan we can execute against — not a slice of the SAM we're claiming by default.</p>
+          </div>
+        </div>
+        <div class="market-notes reveal">
+          <div class="note-card">
+            <h4>Why now</h4>
+            <p>Experience travel is growing faster than travel overall, but almost none of it is online or verified — most bookings still happen offline, through word of mouth.</p>
+          </div>
+          <div class="note-card">
+            <h4>Why India-first</h4>
+            <p>India adds 50M+ international trips and 300+ crore domestic trips a year — a young, mobile-first traveler base with no trusted local-guide layer built for it yet.</p>
+          </div>
+          <div class="note-card">
+            <h4>Why the gap stays open</h4>
+            <p>70%+ of experience operators worldwide are small, unverified operators — too small and scattered for big OTAs to bother with. That's exactly the layer our KYC + trust score is built to organize.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-callout reveal" style="margin-top:56px; display:block;">
+        <h4 style="font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--marigold); margin:0 0 18px;">The math behind the Year‑3 number — built bottom-up, not top-down</h4>
+        <div class="stat-breakdown">
+          <div><div class="big" style="font-size:1.9rem;">5,000</div><div class="cap">verified guides across 25 cities (~200/city)</div></div>
+          <div><div class="big" style="font-size:1.9rem;">30</div><div class="cap">avg. bookings per guide, per year</div></div>
+          <div><div class="big" style="font-size:1.9rem;">₹1,800</div><div class="cap">avg. booking value (blended online + offline)</div></div>
+          <div><div class="big" style="font-size:1.9rem;">18%</div><div class="cap">blended take rate → our revenue</div></div>
+        </div>
+        <p class="cap" style="margin-top:18px; max-width:none;">5,000 guides × 30 bookings × ₹1,800 = <b style="color:var(--paper);">₹270 crore</b> in annual bookings flowing through the platform by Year 3 → <b style="color:var(--paper);">~₹48.6 crore (~$5.8M)</b> in take-rate revenue. Change any one input and you can re-check the whole plan — that's the point of building it bottom-up.</p>
+      </div>
+
+      <p class="fine">TAM figures per Phocuswright/Arival "Travel Experiences 2026." India travel &amp; tourism and outbound figures per IMARC Group and Future Market Insights (2026 reports); estimates vary by methodology and are shown as ranges. SAM and SOM figures beyond the cited TAM, and the unit-economics math above, are Virun's own estimates for pitch purposes — not third-party data.</p>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section id="cmp" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>Nobody occupies the top-right</h2>
+        <p class="head-note">Everyone picks one axis. AI planners personalize but verify nothing. Marketplaces verify guides but stop planning once you book.</p>
+      </div>
+      <div class="cmp-layout">
+        <div class="quadrant reveal">
+          <span class="qaxis top">High personalization</span>
+          <span class="qaxis bottom">Low personalization</span>
+          <span class="qaxis left">Low trust &amp; safety</span>
+          <span class="qaxis right">High trust &amp; safety</span>
+          <div class="qdot" style="left:18%; top:82%;">Google Maps<span class="qtip">Google Maps</span></div>
+          <div class="qdot" style="left:14%; top:70%;">Instagram/Blogs<span class="qtip">Instagram &amp; travel blogs</span></div>
+          <div class="qdot" style="left:22%; top:22%;">ChatGPT/Wonderplan<span class="qtip">Generic AI trip planners</span></div>
+          <div class="qdot" style="left:74%; top:78%;">GetYourGuide/Viator<span class="qtip">GetYourGuide &amp; Viator</span></div>
+          <div class="qdot" style="left:66%; top:52%;">Withlocals/ToursByLocals<span class="qtip">Withlocals, ToursByLocals, GuruWalk</span></div>
+          <div class="qdot virun" style="left:82%; top:16%;">Virun<span class="qtip">Virun</span></div>
+        </div>
+        <div class="reveal">
+          <div class="cmp-table-wrap">
+          <table class="cmp-table">
+            <thead>
+              <tr><th>Platform</th><th>AI itinerary</th><th>Verified human local</th><th>In-trip help</th><th>Safety net</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="name" data-label="Platform">Google Maps</td><td class="no" data-label="AI itinerary">✗</td><td class="no" data-label="Verified human local">✗</td><td class="no" data-label="In-trip help">✗</td><td class="no" data-label="Safety net">✗</td></tr>
+              <tr><td class="name" data-label="Platform">Instagram / Blogs</td><td class="no" data-label="AI itinerary">✗</td><td class="part" data-label="Verified human local">Unverified</td><td class="no" data-label="In-trip help">✗</td><td class="no" data-label="Safety net">✗</td></tr>
+              <tr><td class="name" data-label="Platform">ChatGPT / Wonderplan-style</td><td class="yes" data-label="AI itinerary">✓</td><td class="no" data-label="Verified human local">✗</td><td class="no" data-label="In-trip help">✗</td><td class="no" data-label="Safety net">✗</td></tr>
+              <tr><td class="name" data-label="Platform">GetYourGuide / Viator</td><td class="no" data-label="AI itinerary">✗</td><td class="part" data-label="Verified human local">Mostly operators</td><td class="no" data-label="In-trip help">✗</td><td class="part" data-label="Safety net">Refunds only</td></tr>
+              <tr><td class="name" data-label="Platform">Withlocals / ToursByLocals / GuruWalk</td><td class="no" data-label="AI itinerary">✗</td><td class="yes" data-label="Verified human local">✓</td><td class="part" data-label="In-trip help">During tour only</td><td class="part" data-label="Safety net">Basic</td></tr>
+              <tr class="highlight"><td class="name" data-label="Platform">Virun</td><td class="yes" data-label="AI itinerary">✓</td><td class="yes" data-label="Verified human local">✓</td><td class="yes" data-label="In-trip help">✓</td><td class="yes" data-label="Safety net">✓ Escrow + SOS</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="htw" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>The journey, in six stops</h2>
+        <p class="head-note">54.1% of travelers want to plan it themselves. 52.7% still want expert help "when it depends." So Virun is built AI-first, human-optional — never AI-only or agency-only.</p>
+      </div>
+      <div class="phase-label reveal">Before you land</div>
+      <div class="steps-row reveal">
+        <div class="step-card"><div class="stepno">STOP 1</div><h3>Select your destination</h3><p>Pick a city — or let Virun suggest one from your interests and season.</p></div>
+        <div class="step-card"><div class="stepno">STOP 2</div><h3>Choose language &amp; budget</h3><p>Telugu + English by default, Hindi as a strong third, Tamil next — matched to your budget band.</p></div>
+        <div class="step-card"><div class="stepno">STOP 3</div><h3>Define interests</h3><p>Adventure and heritage first — that's where 94.6% of surveyed guide demand actually sits, not generic city tours.</p></div>
+      </div>
+      <div class="phase-label reveal">Once you're there</div>
+      <div class="steps-row second reveal">
+        <div class="step-card"><div class="stepno">STOP 4</div><h3>AI creates your trip plan</h3><p>A full itinerary you stay in control of and can edit — not a locked-in agency package.</p></div>
+        <div class="step-card"><div class="stepno">STOP 5</div><h3>Top it up with a local, if needed</h3><p>Only 28.4% want a guide outright — most want one "if the city's unfamiliar." So local top-up is a toggle, not a forced step, and it's what solves the top 3 validated frictions: transit, budget stays, and food.</p></div>
+        <div class="step-card"><div class="stepno">STOP 6</div><h3>Real-time travel assistance</h3><p>Live translation, scam alerts, an SOS line, and a solo/companion toggle you can flip per day — surveyed travelers were split three ways on wanting company at all.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UNDER THE HOOD -->
+  <section id="tec" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>Not just a pitch deck — a working prototype</h2>
+        <p class="head-note">Kept simple on purpose. The point isn't the tech stack, it's that Step 4 above is real today, not a mockup.</p>
+      </div>
+      <div class="trust-grid tec-grid reveal">
+        <div class="trust-card">
+          <div class="ic">⚙️</div>
+          <h4>What's already working</h4>
+          <p>The itinerary and in-trip chat you saw in "How It Works" run on real AI (Claude) today — not scripted demo text. It plans your trip, answers follow-up questions, and revises the plan live, in the traveler's chosen language. The AI key is kept on a small backend, not exposed in the app, and the whole thing is hosted on GitHub + Netlify.</p>
+        </div>
+        <div class="trust-card">
+          <div class="ic">🧩</div>
+          <h4>What's next before launch</h4>
+          <p>Escrow-based payments (Razorpay), a real guide database with KYC verification (Firebase), and the safety layer — SOS, live location sharing — get built on top of this same working core over the next phase, detailed next.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSINESS MODEL & STRATEGY -->
+  <section id="biz" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>How Virun makes money — and earns it</h2>
+        <p class="head-note">Three revenue lines, priced against what surveyed travelers actually said they'd pay — plus a step-by-step plan for the first 6 months that anyone on the team can pick up and run.</p>
+      </div>
+      <div class="biz-cards reveal">
+        <div class="biz-card">
+          <div class="tag">1 · Marketplace commission — the core engine</div>
+          <h3>15–20% take rate</h3>
+          <p>On guide bookings priced at what travelers said they'd pay: ₹200–600 for a 4–6 day online-guide tier, ₹1,000–3,000 (₹2,000–2,500 typical) for an in-person guide. This is the only revenue line live in the first 6 months.</p>
+        </div>
+        <div class="biz-card">
+          <div class="tag">2 · Virun+ subscription — add after traction</div>
+          <h3>Unlimited AI planning</h3>
+          <p>Unlimited itineraries, live translation, and priority guide matching for frequent travelers. Switched on once we have repeat users worth subscribing, not on day one.</p>
+        </div>
+        <div class="biz-card">
+          <div class="tag">3 · Partnerships &amp; B2B — add once supply is proven</div>
+          <h3>Hotels, boards, corporates</h3>
+          <p>Affiliate commission from hotel &amp; restaurant partners, tourism board deals, and corporate travel packages. Only pursued after Phase 1 supply is in place — partners want proof, not a pitch.</p>
+        </div>
+      </div>
+
+      <div class="roadmap reveal">
+        <div class="phase-label" style="margin-top:0;">Go-to-market — build it real first, prove it in one city, then scale</div>
+        <div class="roadmap-track">
+          <div class="leg">
+            <div class="dot">1</div>
+            <span class="when">Months 0–2</span>
+            <h4>Finish building the real product</h4>
+            <p>Take the AI planning engine from working prototype to production, wire up Razorpay escrow payments, and stand up the guide-onboarding + KYC pipeline. Zero marketing spend here — this phase is purely about the app being real before a single traveler is asked to pay.</p>
+          </div>
+          <div class="leg">
+            <div class="dot">2</div>
+            <span class="when">Months 2–6</span>
+            <h4>One city, then a second</h4>
+            <p><b>Hyderabad first:</b> recruit and KYC-verify 50–100 guides, then run real paid bookings end-to-end before opening anywhere else. <b>Why supply first:</b> only 24.3% of surveyed travelers want to be guides — the hard, slow part starts on day one. Once payments and safety hold up in Hyderabad, replicate the exact same playbook in Vizag — no third city until both are working.</p>
+          </div>
+          <div class="leg">
+            <div class="dot">3</div>
+            <span class="when">Months 6–18</span>
+            <h4>Build the demand loop</h4>
+            <p><b>Goal:</b> first 10,000 bookers, mostly through channels that cost near-zero cash. Campus and community ambassadors, referral rewards on Companion Mode, and "hidden gems" content only a verified local could write.</p>
+          </div>
+          <div class="leg">
+            <div class="dot">4</div>
+            <span class="when">Months 18–36</span>
+            <h4>Scale city by city</h4>
+            <p><b>Goal:</b> 15–25 cities, ~5,000 guides live, using the same city-by-city rollout that worked for Hyderabad and Vizag. Switch on Virun+ and B2B/corporate deals only once this supply base exists to sell against.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="moat-box reveal">
+        <div class="col">
+          <h4>Where the moat actually is</h4>
+          <p>The AI planning layer will commoditize fast — every competitor will have one within a year. The defensible part is the verified-local trust graph and safety infrastructure (KYC, trust scores, escrow, SOS) that compounds with every booking and is expensive for a pure chatbot or content platform to copy.</p>
+        </div>
+        <div class="col">
+          <h4>Known risks, and the concrete fix for each</h4>
+          <ul>
+            <li><b>Guide supply is the hard constraint, not traveler demand:</b> only 24.3% of surveyed travelers would become guides — fixed by running a dedicated recruitment funnel alongside the app from day one, not after launch.</li>
+            <li><b>Cold start:</b> fixed by proving the model fully in Hyderabad — real guides, real bookings, real payments — before opening Vizag, instead of spreading thin across many cities from day one.</li>
+            <li><b>Guide quality / fraud:</b> fixed by mandatory government KYC, a visible trust score, escrow on every payment, and community moderation.</li>
+            <li><b>Big OTAs adding AI planning:</b> our edge is the verified human + safety layer underneath the AI, which a pure software competitor can't copy quickly.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section id="trs" class="section">
+    <div class="wrap">
+      <div class="head-row reveal">
+        <h2>Trust first, by design</h2>
+        <p class="head-note">Every guide is verified. Every transaction is protected. Every traveler is safe.</p>
+      </div>
+      <div class="trust-grid reveal">
+        <div class="trust-card"><div class="ic">🔐</div><h4>Verified local experts</h4><p>Government KYC, face and phone verification, trust score, optional professional checks.</p></div>
+        <div class="trust-card"><div class="ic">🔒</div><h4>Privacy protected</h4><p>All communication stays in-app — no personal contact details shared until both sides agree.</p></div>
+        <div class="trust-card"><div class="ic">💳</div><h4>Escrow payments</h4><p>Payment is held by the platform and released only after the service is completed, with refund support.</p></div>
+        <div class="trust-card"><div class="ic">🤝</div><h4>Mutual-consent matching</h4><p>Both traveler and local expert must accept before a Companion Mode meetup happens.</p></div>
+        <div class="trust-card"><div class="ic">⭐</div><h4>Community moderation</h4><p>Two-way ratings, fake-profile removal, and repeat offenders banned from the platform.</p></div>
+        <div class="trust-card"><div class="ic">🚨</div><h4>24/7 safety net</h4><p>One-tap emergency SOS, live location sharing, and trip history for every booking.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ASK -->
+  <section id="arr" class="section ask">
+    <div class="wrap">
+      <div class="eyebrow reveal">Landing</div>
+      <h2 class="reveal">We don't just help people visit cities. We help them experience them.</h2>
+      <p class="lede reveal">Looking to talk product, pilot cities, or funding for the first supply push. Boarding pass ready whenever you are.</p>
+      <div class="contact-row reveal">
+        <div class="c-item"><div class="label">Website</div><div class="val">virun.app</div></div>
+        <div class="c-item"><div class="label">Email</div><div class="val">chittideepthi336@gmail.com</div></div>
+        <div class="c-item"><div class="label">Email</div><div class="val">priyachatakonda2701@gmail.com</div></div>
+        <div class="c-item"><div class="label">Email</div><div class="val">dhanunjayreddy905@gmail.com</div></div>
+      </div>
+    </div>
+    <footer>
+      <div class="wrap">VIRUN · Experience every city like a local · Deck v2</div>
+    </footer>
+  </section>
+
+</main>
+
+<script>
+  const stops = document.querySelectorAll('.rail-stop');
+  const sections = document.querySelectorAll('main .section');
+  const plane = document.getElementById('railPlane');
+  const isMobile = () => window.innerWidth <= 980;
+
+  stops.forEach(s=>{
+    s.addEventListener('click', ()=>{
+      document.getElementById(s.dataset.target).scrollIntoView({behavior:'smooth'});
+    });
+  });
+
+  function setActive(id){
+    stops.forEach((s,i)=>{
+      const active = s.dataset.target === id;
+      s.classList.toggle('active', active);
+      if(active){
+        if(isMobile()){
+          plane.style.left = (i/(stops.length-1))*100 + '%';
+          plane.style.top = '50%';
+        } else {
+          plane.style.top = (i/(stops.length-1))*100 + '%';
+        }
+      }
+    });
+  }
+
+  // Nav-highlight observer: which section are we currently in (loose threshold, works on any screen size)
+  const navIo = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        setActive(e.target.id);
+        const funnel = e.target.querySelector('.funnel');
+        if(funnel) funnel.classList.add('in-view');
+      }
+    });
+  }, {threshold:0, rootMargin:'-45% 0px -45% 0px'});
+  sections.forEach(s=>navIo.observe(s));
+
+  // Reveal observer: fade in each element individually as soon as any part of it is visible.
+  // (Gating this on the whole PARENT SECTION being 40% visible fails on mobile, where many
+  // sections are taller than 2.5x the viewport and can never reach that ratio.)
+  const revealIo = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in-view');
+        revealIo.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.01, rootMargin:'0px 0px -5% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>revealIo.observe(el));
+
+  setActive('dep');
+
+  // Tap-to-reveal tooltips for quadrant dots on touch devices
+  document.querySelectorAll('.qdot').forEach(dot=>{
+    dot.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      document.querySelectorAll('.qdot.tapped').forEach(d=>{ if(d!==dot) d.classList.remove('tapped'); });
+      dot.classList.toggle('tapped');
+    });
+  });
+  document.addEventListener('click', ()=>{
+    document.querySelectorAll('.qdot.tapped').forEach(d=>d.classList.remove('tapped'));
+  });
+</script>
+
+</body>
+</html>
