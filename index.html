@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>(function(){try{var t=localStorage.getItem("virun-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();</script>
 <title>Virun — Experience Every City Like a Local</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -259,6 +260,60 @@
   .contact-row .c-item .val{font-size:1.05rem; margin-top:6px; font-weight:600; color:var(--marigold); word-break:break-word;}
   footer{padding:40px 0 60px; font-size:0.72rem; color:rgba(246,241,226,0.4); font-family:var(--mono);}
 
+
+  /* ===== Light mode ===== */
+  [data-theme="light"]{
+    --ink:#F6F1E2;
+    --ink-2:#FFFFFF;
+    --paper:#141B33;
+    --paper-dim:#3A4157;
+    --ink-text:#F6F1E2;
+  }
+  [data-theme="light"] body{background:var(--ink); color:var(--paper);}
+  [data-theme="light"] .route-rail{
+    background:linear-gradient(180deg, rgba(246,241,226,0.97), rgba(246,241,226,0.88));
+    border-right:1px solid rgba(20,27,51,0.14);
+  }
+  [data-theme="light"] .rail-stop{background:var(--ink); border-color:rgba(20,27,51,0.35);}
+  [data-theme="light"] .rail-stop .code{color:var(--paper-dim);}
+  [data-theme="light"] .rail-stop.active{border-color:var(--marigold-dim);}
+  [data-theme="light"] .rail-stop.active .code, [data-theme="light"] .hero h1 em,
+  [data-theme="light"] .stat-callout .big, [data-theme="light"] .val-meta b,
+  [data-theme="light"] .eyebrow{color:var(--marigold-dim);}
+  [data-theme="light"] .eyebrow::before{background:var(--marigold-dim);}
+  [data-theme="light"] .val-card .pct, [data-theme="light"] .step-card .stepno,
+  [data-theme="light"] .note-card h4, [data-theme="light"] .biz-card .tag,
+  [data-theme="light"] .stat-callout h4{color:var(--teal-dim);}
+  [data-theme="light"] section.section{border-bottom:1px solid rgba(20,27,51,0.10);}
+  [data-theme="light"] .problem-card, [data-theme="light"] .val-card, [data-theme="light"] .step-card,
+  [data-theme="light"] .trust-card, [data-theme="light"] .note-card, [data-theme="light"] .biz-card{
+    background:var(--ink-2); border-color:rgba(20,27,51,0.14);
+    box-shadow:0 1px 3px rgba(20,27,51,0.08);
+  }
+  [data-theme="light"] .quadrant{background:var(--ink-2); border-color:rgba(20,27,51,0.16);}
+  [data-theme="light"] .quadrant::before, [data-theme="light"] .quadrant::after{background:rgba(20,27,51,0.16);}
+  [data-theme="light"] .rail-line{border-left-color:rgba(20,27,51,0.28);}
+  [data-theme="light"] .funnel-track{background:rgba(20,27,51,0.08);}
+  [data-theme="light"] .cmp-table th, [data-theme="light"] .cmp-table td{border-bottom:1px solid rgba(20,27,51,0.10);}
+  [data-theme="light"] .cmp-table tr.highlight td{background:rgba(232,163,61,0.14);}
+  [data-theme="light"] .pain-list li{border-bottom:1px solid rgba(20,27,51,0.10);}
+  [data-theme="light"] .btn-ghost{border-color:rgba(20,27,51,0.45);}
+  [data-theme="light"] .fine, [data-theme="light"] footer{color:rgba(20,27,51,0.55);}
+  [data-theme="light"] .no{color:rgba(20,27,51,0.35);}
+  [data-theme="light"] .roadmap-track::before{border-top-color:rgba(20,27,51,0.30);}
+  [data-theme="light"] .leg .dot{background:var(--ink);}
+  [data-theme="light"] .qdot .qtip{background:#141B33; color:#F6F1E2;}
+  [data-theme="light"] .qdot.virun .qtip{background:var(--marigold); color:#141B33;}
+  [data-theme="light"] .quote-box{background:rgba(79,189,174,0.14);}
+  [data-theme="light"] .stat-callout{background:linear-gradient(120deg, rgba(232,163,61,0.16), transparent);}
+  .theme-toggle{
+    position:fixed; top:16px; right:16px; z-index:100;
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.04em; text-transform:uppercase;
+    padding:10px 14px; border-radius:3px; cursor:pointer;
+    background:var(--ink-2); color:var(--paper); border:1px solid rgba(128,128,128,0.45);
+  }
+  @media (max-width:980px){ .theme-toggle{top:66px;} }
+
   /* ===== Tablet / small desktop ===== */
   @media (max-width:980px){
     .route-rail{width:100%; height:56px; top:0; flex-direction:row; border-right:none; border-bottom:1px solid rgba(246,241,226,0.12);}
@@ -334,6 +389,8 @@
   </div>
 </nav>
 
+<button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch between light and dark mode">☀ Light mode</button>
+
 <main>
 
   <!-- DEPARTURE / HERO -->
@@ -342,15 +399,15 @@
       <div>
         <div class="eyebrow">Boarding Pass</div>
         <h1>Every city has two versions.<br>Tourists see one. <em>Locals live in the other.</em></h1>
-        <p class="lede">Virun pairs an AI-built itinerary with a real, verified local — so you land in the version locals actually live in, not the one built for tour buses.</p>
+        <p class="lede">Virun will pair an AI-built itinerary with a real, verified local — so you land in the version locals actually live in, not the one built for tour buses.</p>
         <div class="cta-row">
           <a href="#prb" class="btn btn-primary">See the problem →</a>
           <a href="#biz" class="btn btn-ghost">Read the strategy</a>
         </div>
         <div class="tagline-strip">
           <div><b>AI planning</b><br>in your language</div>
-          <div><b>Verified local expert</b><br>government KYC + trust score</div>
-          <div><b>Real-time in-trip</b><br>scam alerts · SOS · translation</div>
+          <div><b>Verified local expert</b><br>planned: government KYC + trust score</div>
+          <div><b>Real-time in-trip</b><br>translation live · SOS planned</div>
         </div>
       </div>
       <div class="stamp-badge">Where AI Meets Local Expertise — Est. 2026</div>
@@ -492,7 +549,7 @@
           </div>
           <div class="note-card">
             <h4>Why the gap stays open</h4>
-            <p>70%+ of experience operators worldwide are small, unverified operators — too small and scattered for big OTAs to bother with. That's exactly the layer our KYC + trust score is built to organize.</p>
+            <p>70%+ of experience operators worldwide are small, unverified operators — too small and scattered for big OTAs to bother with. That's exactly the layer our planned KYC + trust score is designed to organize.</p>
           </div>
         </div>
       </div>
@@ -544,10 +601,11 @@
               <tr><td class="name" data-label="Platform">ChatGPT / Wonderplan-style</td><td class="yes" data-label="AI itinerary">✓</td><td class="no" data-label="Verified human local">✗</td><td class="no" data-label="In-trip help">✗</td><td class="no" data-label="Safety net">✗</td></tr>
               <tr><td class="name" data-label="Platform">GetYourGuide / Viator</td><td class="no" data-label="AI itinerary">✗</td><td class="part" data-label="Verified human local">Mostly operators</td><td class="no" data-label="In-trip help">✗</td><td class="part" data-label="Safety net">Refunds only</td></tr>
               <tr><td class="name" data-label="Platform">Withlocals / ToursByLocals / GuruWalk</td><td class="no" data-label="AI itinerary">✗</td><td class="yes" data-label="Verified human local">✓</td><td class="part" data-label="In-trip help">During tour only</td><td class="part" data-label="Safety net">Basic</td></tr>
-              <tr class="highlight"><td class="name" data-label="Platform">Virun</td><td class="yes" data-label="AI itinerary">✓</td><td class="yes" data-label="Verified human local">✓</td><td class="yes" data-label="In-trip help">✓</td><td class="yes" data-label="Safety net">✓ Escrow + SOS</td></tr>
+              <tr class="highlight"><td class="name" data-label="Platform">Virun</td><td class="yes" data-label="AI itinerary">✓ live</td><td class="part" data-label="Verified human local">Planned</td><td class="part" data-label="In-trip help">AI chat live</td><td class="part" data-label="Safety net">Planned: Escrow + SOS</td></tr>
             </tbody>
           </table>
           </div>
+          <p class="fine" style="margin-top:16px;">Virun row shows the planned product: AI itinerary and AI chat are live today; verified guides, escrow and SOS are next before launch — see "Under the Hood".</p>
         </div>
       </div>
     </div>
@@ -569,8 +627,8 @@
       <div class="phase-label reveal">Once you're there</div>
       <div class="steps-row second reveal">
         <div class="step-card"><div class="stepno">STOP 4</div><h3>AI creates your trip plan</h3><p>A full itinerary you stay in control of and can edit — not a locked-in agency package.</p></div>
-        <div class="step-card"><div class="stepno">STOP 5</div><h3>Top it up with a local, if needed</h3><p>Only 28.4% want a guide outright — most want one "if the city's unfamiliar." So local top-up is a toggle, not a forced step, and it's what solves the top 3 validated frictions: transit, budget stays, and food.</p></div>
-        <div class="step-card"><div class="stepno">STOP 6</div><h3>Real-time travel assistance</h3><p>Live translation, scam alerts, an SOS line, and a solo/companion toggle you can flip per day — surveyed travelers were split three ways on wanting company at all.</p></div>
+        <div class="step-card"><div class="stepno">STOP 5</div><h3>Top it up with a local, if needed</h3><p>Planned: local top-up is a toggle, not a forced step — only 28.4% want a guide outright, most want one "if the city's unfamiliar." It's what would solve the top 3 validated frictions: transit, budget stays, and food.</p></div>
+        <div class="step-card"><div class="stepno">STOP 6</div><h3>Real-time travel assistance</h3><p>Live translation today, with scam alerts and an SOS line planned before launch, and a solo/companion toggle you can flip per day — surveyed travelers were split three ways on wanting company at all.</p></div>
       </div>
     </div>
   </section>
@@ -608,7 +666,7 @@
         <div class="biz-card">
           <div class="tag">1 · Marketplace commission — the core engine</div>
           <h3>15–20% take rate</h3>
-          <p>On guide bookings priced at what travelers said they'd pay: ₹200–600 for a 4–6 day online-guide tier, ₹1,000–3,000 (₹2,000–2,500 typical) for an in-person guide. This is the only revenue line live in the first 6 months.</p>
+          <p>On guide bookings priced at what travelers said they'd pay: ₹200–600 for a 4–6 day online-guide tier, ₹1,000–3,000 (₹2,000–2,500 typical) for an in-person guide. This is the only revenue line planned for the first 6 months after launch.</p>
         </div>
         <div class="biz-card">
           <div class="tag">2 · Virun+ subscription — add after traction</div>
@@ -655,14 +713,14 @@
       <div class="moat-box reveal">
         <div class="col">
           <h4>Where the moat actually is</h4>
-          <p>The AI planning layer will commoditize fast — every competitor will have one within a year. The defensible part is the verified-local trust graph and safety infrastructure (KYC, trust scores, escrow, SOS) that compounds with every booking and is expensive for a pure chatbot or content platform to copy.</p>
+          <p>The AI planning layer will commoditize fast — every competitor will have one within a year. The defensible part will be the planned verified-local trust graph and safety infrastructure (KYC, trust scores, escrow, SOS) that compounds with every booking and is expensive for a pure chatbot or content platform to copy.</p>
         </div>
         <div class="col">
           <h4>Known risks, and the concrete fix for each</h4>
           <ul>
             <li><b>Guide supply is the hard constraint, not traveler demand:</b> only 24.3% of surveyed travelers would become guides — fixed by running a dedicated recruitment funnel alongside the app from day one, not after launch.</li>
             <li><b>Cold start:</b> fixed by proving the model fully in Hyderabad — real guides, real bookings, real payments — before opening Vizag, instead of spreading thin across many cities from day one.</li>
-            <li><b>Guide quality / fraud:</b> fixed by mandatory government KYC, a visible trust score, escrow on every payment, and community moderation.</li>
+            <li><b>Guide quality / fraud:</b> planned fix — mandatory government KYC, a visible trust score, escrow on every payment, and community moderation.</li>
             <li><b>Big OTAs adding AI planning:</b> our edge is the verified human + safety layer underneath the AI, which a pure software competitor can't copy quickly.</li>
           </ul>
         </div>
@@ -675,15 +733,15 @@
     <div class="wrap">
       <div class="head-row reveal">
         <h2>Trust first, by design</h2>
-        <p class="head-note">Every guide is verified. Every transaction is protected. Every traveler is safe.</p>
+        <p class="head-note">Trust first, by design — planned for launch, not live yet. Every guide will be verified, every transaction protected, every traveler safe.</p>
       </div>
       <div class="trust-grid reveal">
-        <div class="trust-card"><div class="ic">🔐</div><h4>Verified local experts</h4><p>Government KYC, face and phone verification, trust score, optional professional checks.</p></div>
-        <div class="trust-card"><div class="ic">🔒</div><h4>Privacy protected</h4><p>All communication stays in-app — no personal contact details shared until both sides agree.</p></div>
-        <div class="trust-card"><div class="ic">💳</div><h4>Escrow payments</h4><p>Payment is held by the platform and released only after the service is completed, with refund support.</p></div>
-        <div class="trust-card"><div class="ic">🤝</div><h4>Mutual-consent matching</h4><p>Both traveler and local expert must accept before a Companion Mode meetup happens.</p></div>
-        <div class="trust-card"><div class="ic">⭐</div><h4>Community moderation</h4><p>Two-way ratings, fake-profile removal, and repeat offenders banned from the platform.</p></div>
-        <div class="trust-card"><div class="ic">🚨</div><h4>24/7 safety net</h4><p>One-tap emergency SOS, live location sharing, and trip history for every booking.</p></div>
+        <div class="trust-card"><div class="ic">🔐</div><h4>Verified local experts — planned</h4><p>Planned before launch: government KYC, face and phone verification, trust score, optional professional checks.</p></div>
+        <div class="trust-card"><div class="ic">🔒</div><h4>Privacy protected — by design</h4><p>By design: all communication stays in-app — no personal contact details shared until both sides agree.</p></div>
+        <div class="trust-card"><div class="ic">💳</div><h4>Escrow payments — planned</h4><p>Planned: payment is held by the platform and released only after the service is completed, with refund support.</p></div>
+        <div class="trust-card"><div class="ic">🤝</div><h4>Mutual-consent matching — planned</h4><p>Planned: both traveler and local expert must accept before a Companion Mode meetup happens.</p></div>
+        <div class="trust-card"><div class="ic">⭐</div><h4>Community moderation — planned</h4><p>Planned: two-way ratings, fake-profile removal, and repeat offenders banned from the platform.</p></div>
+        <div class="trust-card"><div class="ic">🚨</div><h4>24/7 safety net — planned</h4><p>Planned: one-tap emergency SOS, live location sharing, and trip history for every booking.</p></div>
       </div>
     </div>
   </section>
@@ -761,6 +819,23 @@
   document.querySelectorAll('.reveal').forEach(el=>revealIo.observe(el));
 
   setActive('dep');
+
+  // Light / dark theme toggle, saved in this browser only
+  (function(){
+    var btn = document.getElementById('themeToggle');
+    if(!btn) return;
+    function label(){
+      var light = document.documentElement.getAttribute('data-theme') === 'light';
+      btn.textContent = light ? '☾ Dark mode' : '☀ Light mode';
+    }
+    btn.addEventListener('click', function(){
+      var next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try{ localStorage.setItem('virun-theme', next); }catch(e){}
+      label();
+    });
+    label();
+  })();
 
   // Tap-to-reveal tooltips for quadrant dots on touch devices
   document.querySelectorAll('.qdot').forEach(dot=>{
